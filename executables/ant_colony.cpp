@@ -164,8 +164,11 @@ double calculateEnergyAnt(DT& dt, double alpha, double beta, int steiner_points_
         int obtuse_vertex = obtuse_vertex_index(face);
         if (obtuse_vertex != -1) {
             ++obtuse_count;
+            // std::cout<<"MPHKA"<<"\n";
         }
     }
+    // std::cout<<"steiner_points_count"<< " " << steiner_points_count<<"\n";
+    // std::cout<<"obtuse_count"<< " " << obtuse_count<<"\n";
 
     if(obtuse_count == 0){
        return 0.0; 
@@ -189,6 +192,7 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
     std::vector<double> total_probabilities(4, 1.0);
 
     DT temp_dt;
+    temp_dt = dt;
 
     int method_used = 0;
 
@@ -238,6 +242,7 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
                             break;
                         case 1:
                             new_point = circumcenter(p_obtuse, p1, p2);
+                            // new_point = project_point_onto_line(p_obtuse, p1, p2);
                             break;
                         case 2:
                             new_point = longest_edge_center(p1, p2);
@@ -255,7 +260,9 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
                     h[method_used] = CGAL::to_double(radius_to_height_ratio(face, dt));
                     probabilities[method_used] = std::pow(t[method_used], xi) * std::pow(h[method_used], psi);
                     new_energy = calculateEnergyAnt(temp_dt, alpha, beta, steiner_points.size()+1);
+                    std::cout<<"MPHKE"<<new_energy<<"\n";
                     deltaE = new_energy - previous_energy;
+                    // std::cout<<"MPHKE"<<deltaE<<"\n";
 
                     if(deltaE < 0) {
                         previous_energy = new_energy;
@@ -283,6 +290,8 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
             deltaT[method_used] = 0.0;
         }
         t[method_used] = (1 - lamda) * t[method_used] + deltaT[method_used];
+        new_energy=0;
+        previous_energy=10000;
     }
 
     edges = print_edges(dt, points);
