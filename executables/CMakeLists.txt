@@ -36,7 +36,7 @@ if (NOT Boost_FOUND)
 endif()
 
 # Create the executable with both source files
-add_executable(opt_triangulation center.cpp projection.cpp centroid.cpp circumcenter.cpp output.cpp flipEdges.cpp inputs.cpp main.cpp inside_convex_polygon_centroid.cpp utils.cpp local_search.cpp simulated_annealing.cpp ant_colony.cpp)
+add_executable(opt_triangulation center.cpp projection.cpp centroid.cpp circumcenter.cpp output.cpp flipEdges.cpp inputs.cpp main.cpp inside_convex_polygon_centroid.cpp utils.cpp local_search.cpp simulated_annealing.cpp ant_colony.cpp random_point.cpp)
 
 # Link the executable to CGAL, Boost, Qt5, OpenGL, and GLEW libraries
 target_link_libraries(opt_triangulation 
