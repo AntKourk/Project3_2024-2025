@@ -314,6 +314,9 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
         t[method_used] = (1 - lamda) * t[method_used] + deltaT[method_used];
         new_energy=0;
         // previous_energy=10000;
+        if(deltaE == 0){
+            break;
+        }
         first = true;
     }
 
