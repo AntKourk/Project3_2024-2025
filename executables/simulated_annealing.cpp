@@ -81,7 +81,6 @@ int simulated_annealing(std::vector<Point> points, DT dt, double alpha, double b
         for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
             auto obtuse_vertex = obtuse_vertex_index(face);
             if (obtuse_vertex != -1) {
-
                 Point p_obtuse = face->vertex(obtuse_vertex)->point();
                 Point p1 = face->vertex((obtuse_vertex + 1) % 3)->point();
                 Point p2 = face->vertex((obtuse_vertex + 2) % 3)->point();
@@ -114,7 +113,11 @@ int simulated_annealing(std::vector<Point> points, DT dt, double alpha, double b
                 new_energy = calculateEnergy(dt, alpha, beta, steiner_points.size());
                 deltaE = new_energy - previous_energy;
 
+                std::cout<< deltaE << "\n"; 
                 if(accept_new_configuration(deltaE, T)) {
+                    // if (!is_point_inside_perimeter(new_point, p1, p2, p_obtuse)) {
+                    //     std::cout<< "MPHKA"<< "\n";
+                    // }
                     previous_energy = new_energy;
                     points.push_back(new_point);
                     steiner_points.push_back(new_point);

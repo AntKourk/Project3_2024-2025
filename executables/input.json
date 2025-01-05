@@ -1,5 +1,5 @@
 { 
-"instance_uid": "test_4",
+    "instance_uid": "test_4",
     "num_points": 12,
     "points_x": [
         10,
@@ -50,8 +50,8 @@
             11
         ]
     ],
-    "method": "ant", 
-    "parameters": { "alpha": 2.0, "beta": 5.0, "xi": 1.0, "psi": 3.0, "lambda": 0.5, "kappa": 10, "L": 30 } , 
+    "method": "sa", 
+    "parameters": { "alpha": 5.0, "beta": 2.0, "xi": 1.0, "psi": 3.0, "lambda": 0.5, "kappa": 10, "L": 30 } , 
     "delaunay": true
    } 
    
