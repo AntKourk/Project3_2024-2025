@@ -17,12 +17,28 @@
 #include "utils.h"
 #include "output.h"
 #include <string>
+#include <CGAL/Polygon_2.h>
 
 // Define CGAL kernel and types
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 typedef CGAL::Constrained_Delaunay_triangulation_2<K> DT;
 typedef DT::Face_handle FaceHandle;
 typedef DT::Point Point;
+typedef CGAL::Polygon_2<K> Polygon_2;
+
+// Function to check if a point is inside the perimeter of the triangulation
+bool is_point_inside_perimeter(const Point& point, const DT& dt) {
+    // Extract the perimeter of the triangulation
+    Polygon_2 perimeter;
+    for (auto edge = dt.finite_edges_begin(); edge != dt.finite_edges_end(); ++edge) {
+        auto segment = dt.segment(*edge);
+        perimeter.push_back(segment.source());
+        perimeter.push_back(segment.target());
+    }
+
+    // Check if the point is inside the perimeter
+    return perimeter.bounded_side(point) == CGAL::ON_BOUNDED_SIDE;
+}
 
 // Function to compute the height of point P above line segment AB
 K::FT height(const Point& P, const Point& A, const Point& B) {
@@ -182,8 +198,11 @@ double calculateEnergyAnt(DT& dt, double alpha, double beta, int steiner_points_
 // Ant colony optimization function
 int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha, double beta, double lamda, double xi, double psi, const std::string& input_file, const std::string& output_file ) {
     bool obtuse_exists = true;
+    bool first = true;
     int iterations = 0;
     int obtuse_count = 0, obtuse_previous_count = 0;
+    Point new_point;
+    Point best_point;
 
     std::vector<double> t(4, 1.0);      // Initialize with size 4, default value 1.0
     std::vector<double> deltaT(4, 0.0); // Initialize with size 4, default value 0.0
@@ -196,7 +215,7 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
 
     int method_used = 0;
 
-    double sum = 0.0, previous_energy, new_energy, deltaE;
+    double sum = 0.0, previous_energy = 0, new_energy, deltaE;
 
     std::vector<Point> steiner_points;
 
@@ -208,8 +227,6 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
     }
 
     CGAL::draw(dt); // Draw initial triangulation
-
-    previous_energy = 100;
     
     obtuse_exists = false;
 
@@ -235,7 +252,6 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
 
                     method_used = steiner_method(probabilities);
 
-                    Point new_point;
                     switch (method_used) {
                         case 0:
                             new_point = project_point_onto_line(p_obtuse, p1, p2);
@@ -260,15 +276,18 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
                     h[method_used] = CGAL::to_double(radius_to_height_ratio(face, dt));
                     probabilities[method_used] = std::pow(t[method_used], xi) * std::pow(h[method_used], psi);
                     new_energy = calculateEnergyAnt(temp_dt, alpha, beta, steiner_points.size()+1);
-                    std::cout<<"MPHKE"<<new_energy<<"\n";
+                    // std::cout<<new_energy<<" MPHKE "<<previous_energy<<"\n";
                     deltaE = new_energy - previous_energy;
-                    // std::cout<<"MPHKE"<<deltaE<<"\n";
+                    // std::cout<<"MPHKE "<<deltaE<<"\n";
 
-                    if(deltaE < 0) {
+                    // if(deltaE < 0 && is_point_inside_perimeter(new_point, dt)) {
+                    if(deltaE < 0 || first) {
+                        first = false;
                         previous_energy = new_energy;
-                        points.push_back(new_point);
-                        steiner_points.push_back(new_point);
-                        dt.insert(new_point);
+                        best_point = new_point;
+                        // points.push_back(new_point);
+                        // steiner_points.push_back(new_point);
+                        // dt.insert(new_point);
                     }
 
                     temp_dt = dt;
@@ -276,6 +295,9 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
                 }
             }   
         }
+        points.push_back(best_point);
+        steiner_points.push_back(best_point);
+        dt.insert(best_point);
 
         for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
             auto obtuse_vertex = obtuse_vertex_index(face);
@@ -291,7 +313,8 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
         }
         t[method_used] = (1 - lamda) * t[method_used] + deltaT[method_used];
         new_energy=0;
-        previous_energy=10000;
+        // previous_energy=10000;
+        first = true;
     }
 
     edges = print_edges(dt, points);
