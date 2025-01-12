@@ -36,8 +36,9 @@ bool is_point_inside_perimeter(const Point& point, const DT& dt) {
         perimeter.push_back(segment.target());
     }
 
-    // Check if the point is inside the perimeter
-    return perimeter.bounded_side(point) == CGAL::ON_BOUNDED_SIDE;
+    // Check if the point is inside or on the boundary of the perimeter
+    auto bounded_side = perimeter.bounded_side(point);
+    return bounded_side == CGAL::ON_BOUNDED_SIDE || bounded_side == CGAL::ON_BOUNDARY;
 }
 
 // Function to compute the height of point P above line segment AB
@@ -281,7 +282,8 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
                     // std::cout<<"MPHKE "<<deltaE<<"\n";
 
                     // if(deltaE < 0 && is_point_inside_perimeter(new_point, dt)) {
-                    if(deltaE < 0 || first) {
+                    // std::cout<<!is_point_inside_perimeter(best_point, dt)<<"\n";
+                    if((deltaE < 0 || first) && is_point_inside_perimeter(new_point, dt)) {
                         first = false;
                         previous_energy = new_energy;
                         best_point = new_point;
@@ -313,15 +315,19 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
         }
         t[method_used] = (1 - lamda) * t[method_used] + deltaT[method_used];
         new_energy=0;
-        // previous_energy=10000;
-        if(deltaE == 0){
+        // std::cout << obtuse_count << "\n";
+        if (obtuse_count == 0 ){
             break;
         }
+        // previous_energy=10000;
+        // if(deltaE == 0){
+        //     break;
+        // }
         first = true;
     }
 
     edges = print_edges(dt, points);
-    output(edges, steiner_points, input_file, output_file, obtuse_previous_count);
+    output(edges, steiner_points, input_file, output_file, obtuse_count);
     CGAL::draw(dt); // Draw final triangulation
 
     return 0;
