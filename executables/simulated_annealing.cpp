@@ -20,6 +20,21 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K> DT;
 typedef DT::Point Point;
 typedef DT::Edge Edge;
 typedef DT::Face_handle FaceHandle;
+typedef CGAL::Polygon_2<K> Polygon_2;
+
+bool is_point_inside_perimeter_annealing(const Point& point, const DT& dt) {
+    // Extract the perimeter of the triangulation
+    Polygon_2 perimeter;
+    for (auto edge = dt.finite_edges_begin(); edge != dt.finite_edges_end(); ++edge) {
+        auto segment = dt.segment(*edge);
+        perimeter.push_back(segment.source());
+        perimeter.push_back(segment.target());
+    }
+
+    // Check if the point is inside or on the boundary of the perimeter
+    auto bounded_side = perimeter.bounded_side(point);
+    return bounded_side == CGAL::ON_BOUNDED_SIDE || bounded_side == CGAL::ON_BOUNDARY;
+}
 
 double calculateEnergy(DT& dt, double alpha, double beta, int steiner_points_count) {
     int obtuse_count = 0;
@@ -110,11 +125,10 @@ int simulated_annealing(std::vector<Point> points, DT dt, double alpha, double b
                 }
 
                 //Calculate the energy's reduction
-                new_energy = calculateEnergy(dt, alpha, beta, steiner_points.size());
+                new_energy = calculateEnergy(dt, alpha, beta, steiner_points.size()+1);
                 deltaE = new_energy - previous_energy;
 
-                std::cout<< deltaE << "\n"; 
-                if(accept_new_configuration(deltaE, T)) {
+                if(accept_new_configuration(deltaE, T) && is_point_inside_perimeter_annealing(new_point, dt)) {
                     // if (!is_point_inside_perimeter(new_point, p1, p2, p_obtuse)) {
                     //     std::cout<< "MPHKA"<< "\n";
                     // }
