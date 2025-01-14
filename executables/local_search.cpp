@@ -17,6 +17,21 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K> DT;
 typedef DT::Point Point;
 typedef DT::Edge Edge;
 typedef DT::Face_handle FaceHandle;
+typedef CGAL::Polygon_2<K> Polygon_2;
+
+bool is_point_inside_perimeter_local(const Point& point, const DT& dt) {
+    // Extract the perimeter of the triangulation
+    Polygon_2 perimeter;
+    for (auto edge = dt.finite_edges_begin(); edge != dt.finite_edges_end(); ++edge) {
+        auto segment = dt.segment(*edge);
+        perimeter.push_back(segment.source());
+        perimeter.push_back(segment.target());
+    }
+
+    // Check if the point is inside or on the boundary of the perimeter
+    auto bounded_side = perimeter.bounded_side(point);
+    return bounded_side == CGAL::ON_BOUNDED_SIDE || bounded_side == CGAL::ON_BOUNDARY;
+}
 
 // Find best Steiner
 std::pair<std::vector<Point>, std::vector<Point>> add_best_steiner(DT& dt, std::vector<Point> steiner_points, std::vector<Point> points) {
@@ -78,10 +93,19 @@ std::pair<std::vector<Point>, std::vector<Point>> add_best_steiner(DT& dt, std::
                     best_point = centroid_point;
                 }
 
-                // Add the best point to the DT
-                points.push_back(best_point);
-                steiner_points.push_back(best_point);
-                added_steiner = true;
+                // Check if the best option for circumcenter is to add point outside the perimeter
+                if(is_point_inside_perimeter_local(best_point, dt)){
+                    int min_count2 = std::min({count_projection, count_centroid, count_center, count_inside_convex_polygon_centroid});
+                    if (min_count == count_projection) {
+                        best_point = projection_point;
+                    } else if (min_count == count_center) {
+                        best_point = center;
+                    } else if (min_count == count_inside_convex_polygon_centroid) {
+                        best_point = inside_convex_polygon_centroid;
+                    } else {
+                        best_point = centroid_point;
+                    }
+                }
             }
         }
 
