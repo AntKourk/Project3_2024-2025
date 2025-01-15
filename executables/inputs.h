@@ -9,6 +9,8 @@ typedef K::Point_2 Point;  // This defines the Point type as CGAL's Point_2 type
 
 struct InputData {
     std::vector<Point> points;
+    std::vector<int> points_x;
+    std::vector<int> points_y;
     std::vector<int> region_boundary;
     std::vector<std::vector<int>> additional_constraints;
     std::string method;
