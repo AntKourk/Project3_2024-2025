@@ -79,6 +79,8 @@ InputData inputs(const std::string& input_file) {
     // Create inputData struct and populate it
     InputData input_data;
     input_data.points = points;
+    input_data.points_x = points_x;
+    input_data.points_y = points_y;
     input_data.region_boundary = region_boundary;
     input_data.additional_constraints = additional_constraints;
     input_data.method = method;

@@ -21,9 +21,43 @@
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 typedef CGAL::Constrained_Delaunay_triangulation_2<K> CDT;
 typedef CDT::Point Point;
+typedef CGAL::Polygon_2<K> Polygon_2;
 
 
 using namespace std;
+
+bool detectCycle(int node, int parent, const unordered_map<int, vector<int>>& adjacency, unordered_set<int>& visited) {
+    visited.insert(node);
+    for (int neighbor : adjacency.at(node)) {
+        if (neighbor == parent) continue;  // Skip the edge that led here
+        if (visited.find(neighbor) != visited.end() || detectCycle(neighbor, node, adjacency, visited)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool hasClosedConstraints(const vector<vector<int>>& shape) {
+    unordered_map<int, vector<int>> adjacency;
+
+    // Build adjacency list for constraint edges
+    for (const auto& polygon : shape) {
+        adjacency[polygon[0]].push_back(polygon[1]);
+        adjacency[polygon[1]].push_back(polygon[0]);
+    }
+
+    // Detect cycles in the graph using visited set
+    unordered_set<int> visited;
+    for (const auto& node_edges : adjacency) {
+        int node = node_edges.first;
+        if (visited.find(node) == visited.end()) {
+            if (detectCycle(node, -1, adjacency, visited)) {
+                return true;  // Found a cycle -> closed constraint
+            }
+        }
+    }
+    return false;  // No cycles -> open constraints
+}
 
 int main(int argc, char* argv[]) {
     std::string input_file;
@@ -54,6 +88,10 @@ int main(int argc, char* argv[]) {
 
     // Get points
     vector<Point> points = input.points;
+
+    vector<int> points_x = input.points_x;
+    vector<int> points_y = input.points_y;
+
 
     // Get Region Boundary
     vector<int> region_boundary = input.region_boundary;
@@ -116,6 +154,51 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+
+    std::vector<std::vector<int>> shape;
+
+    // Add region boundary edges as pairs
+    for (size_t i = 0; i < region_boundary.size(); ++i) {
+        int start = region_boundary[i];
+        int end = region_boundary[(i + 1) % region_boundary.size()];  
+        shape.push_back({start, end});
+    }
+
+    // Both region boundry and constraints
+    shape.insert(shape.end(), constraints.begin(), constraints.end());
+
+    char category;
+
+    Polygon_2 is_convex_polygon;
+    for (const auto& pt : polygon) {
+        is_convex_polygon.push_back(pt);
+    }
+
+    if (is_convex_polygon.is_convex()) {
+        if(constraints.size() == 0){
+            category = 'A';
+        } else {
+            category = !hasClosedConstraints(shape) ? 'B' : 'C';
+        }
+    } else {
+        category = 'E';
+        if(constraints.size() == 0){
+            bool flag = false;
+            for(int i=0; i<region_boundary.size(); i++) {
+                int current = region_boundary[i];
+                int next = region_boundary[(i + 1) % region_boundary.size()];
+                if (points_x[current] == points_x[next] || points_y[current] == points_y[next]) {
+                    flag = true;
+                    break;
+                }
+            }
+            if(flag == true){
+                category = 'D';
+            }
+        }
+    }
+
+    cout << "Category: " << category << endl; 
 
     if(!isDelaunay){
         // Prompt user to choose the Steiner point insertion method
