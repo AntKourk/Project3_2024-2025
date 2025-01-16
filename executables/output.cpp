@@ -19,6 +19,18 @@
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 typedef K::Point_2 Point;
 
+// double calculateEnergy(DT& dt, double alpha, double beta, int steiner_points_count) {
+//     int obtuse_count = 0;
+//     for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
+//         int obtuse_vertex = obtuse_vertex_index(face);
+//         if (obtuse_vertex != -1) {
+//             ++obtuse_count;
+//         }
+//     }
+
+//     return alpha * obtuse_count + beta * steiner_points_count;
+// }
+
 void write_json_no_escaping(const boost::property_tree::ptree& pt, const std::string& filename) {
     std::ostringstream oss;
     write_json(oss, pt, true); 
@@ -132,6 +144,8 @@ void output(const std::vector<std::pair<size_t, size_t>>& edges, std::vector<Poi
     output_pt.add_child("edges", edges_node);
 
     output_pt.put("obtuse_count", obtuse_count);
+
+    // output_pt.put("steiner_points_count", steiner_points.size());
 
     output_pt.put("method", method);
 

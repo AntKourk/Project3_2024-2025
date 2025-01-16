@@ -93,19 +93,22 @@ std::pair<std::vector<Point>, std::vector<Point>> add_best_steiner(DT& dt, std::
                     best_point = centroid_point;
                 }
 
+                points.push_back(best_point);
+                steiner_points.push_back(best_point);
+
                 // Check if the best option for circumcenter is to add point outside the perimeter
-                if(is_point_inside_perimeter_local(best_point, dt)){
-                    int min_count2 = std::min({count_projection, count_centroid, count_center, count_inside_convex_polygon_centroid});
-                    if (min_count == count_projection) {
-                        best_point = projection_point;
-                    } else if (min_count == count_center) {
-                        best_point = center;
-                    } else if (min_count == count_inside_convex_polygon_centroid) {
-                        best_point = inside_convex_polygon_centroid;
-                    } else {
-                        best_point = centroid_point;
-                    }
-                }
+                // if(is_point_inside_perimeter_local(best_point, dt)){
+                //     int min_count2 = std::min({count_projection, count_centroid, count_center, count_inside_convex_polygon_centroid});
+                //     if (min_count == count_projection) {
+                //         best_point = projection_point;
+                //     } else if (min_count == count_center) {
+                //         best_point = center;
+                //     } else if (min_count == count_inside_convex_polygon_centroid) {
+                //         best_point = inside_convex_polygon_centroid;
+                //     } else {
+                //         best_point = centroid_point;
+                //     }
+                // }
             }
         }
 
@@ -127,37 +130,45 @@ int local_search(std::vector<Point> points, DT dt, int max_iterations, const std
     std::vector<std::pair<size_t, size_t>> edges;
 
     // Insert points into the triangulation
-    for (const Point& p : points) {
-        dt.insert(p);
-    }
+    // for (const Point& p : points) {
+    //     dt.insert(p);
+    // }
 
     CGAL::draw(dt);
 
+    // for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
+    //         auto obtuse_vertex = obtuse_vertex_index(face);
+    //         if (obtuse_vertex != -1) {
+    //             obtuse_previous_count++;
+    //         }
+    //     }
+
     int counter = 0;
     while (obtuse_exists && iterations <= max_iterations && counter < 3) {
-        for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
-            auto obtuse_vertex = obtuse_vertex_index(face);
-            if (obtuse_vertex != -1) {
-                obtuse_previous_count++;
-            }
-        }
         all_points = add_best_steiner(dt, steiner_points, points);
         steiner_points = all_points.first;  // Extract Steiner points
         points = all_points.second;        // Extract updated points
         obtuse_exists = false;
-        for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
-            auto obtuse_vertex = obtuse_vertex_index(face);
-            if (obtuse_vertex != -1) {
-                obtuse_exists = true;
-                obtuse_count++;
-            }
+        obtuse_count = count_obtuse_triangles(dt);
+        if (obtuse_count){
+            obtuse_exists = true;
         }
         iterations++;
         if (obtuse_count > obtuse_previous_count) {
             counter++;
+            obtuse_previous_count = obtuse_count;
+            obtuse_count = 0;
         }
+        std::cout<<obtuse_count << "\n";
     }
 
+    obtuse_count = 0;
+    for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
+        auto obtuse_vertex = obtuse_vertex_index(face);
+        if (obtuse_vertex != -1) {
+            obtuse_count++;
+        }
+    }
     edges = print_edges(dt, all_points.first);
     output(edges, steiner_points, input_file, output_file, obtuse_count);
     CGAL::draw(dt);

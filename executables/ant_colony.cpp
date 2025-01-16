@@ -223,9 +223,9 @@ int ant_colony(std::vector<Point> points, DT& dt, int L, int kappa, double alpha
     std::vector<std::pair<size_t, size_t>> edges;
 
     // Insert points into the triangulation
-    for (const Point& p : points) {
-        dt.insert(p);
-    }
+    // for (const Point& p : points) {
+    //     dt.insert(p);
+    // }
 
     CGAL::draw(dt); // Draw initial triangulation
     
