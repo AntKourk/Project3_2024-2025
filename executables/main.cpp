@@ -26,6 +26,8 @@ typedef CGAL::Polygon_2<K> Polygon_2;
 
 using namespace std;
 
+
+//Function to detect cycles in the polygon
 bool detectCycle(int node, int parent, const unordered_map<int, vector<int>>& adjacency, unordered_set<int>& visited) {
     visited.insert(node);
     for (int neighbor : adjacency.at(node)) {
@@ -37,10 +39,11 @@ bool detectCycle(int node, int parent, const unordered_map<int, vector<int>>& ad
     return false;
 }
 
+//Function to check if the constraints and the region boundary form polygons (closed constraints)
 bool hasClosedConstraints(const vector<vector<int>>& shape) {
     unordered_map<int, vector<int>> adjacency;
 
-    // Build adjacency list for constraint edges
+    // Build adjacency list for the edges
     for (const auto& polygon : shape) {
         adjacency[polygon[0]].push_back(polygon[1]);
         adjacency[polygon[1]].push_back(polygon[0]);
@@ -91,7 +94,6 @@ int main(int argc, char* argv[]) {
 
     vector<int> points_x = input.points_x;
     vector<int> points_y = input.points_y;
-
 
     // Get Region Boundary
     vector<int> region_boundary = input.region_boundary;
@@ -174,6 +176,7 @@ int main(int argc, char* argv[]) {
         is_convex_polygon.push_back(pt);
     }
 
+    //input category
     if (is_convex_polygon.is_convex()) {
         if(constraints.size() == 0){
             category = 'A';
