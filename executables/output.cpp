@@ -10,6 +10,8 @@
 #include <string>
 #include <sstream>
 #include <boost/algorithm/string/replace.hpp>
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include "utils.h"
 #include <fstream>
 #include <map>
 #include <set>
@@ -17,19 +19,20 @@
 
 // Define CGAL types
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
+typedef CGAL::Constrained_Delaunay_triangulation_2<K> DT;
 typedef K::Point_2 Point;
 
-// double calculateEnergy(DT& dt, double alpha, double beta, int steiner_points_count) {
-//     int obtuse_count = 0;
-//     for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
-//         int obtuse_vertex = obtuse_vertex_index(face);
-//         if (obtuse_vertex != -1) {
-//             ++obtuse_count;
-//         }
-//     }
+double calculateEnergy_Output(DT& dt, double alpha, double beta, int steiner_points_count) {
+    int obtuse_count = 0;
+    for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
+        int obtuse_vertex = obtuse_vertex_index(face);
+        if (obtuse_vertex != -1) {
+            ++obtuse_count;
+        }
+    }
 
-//     return alpha * obtuse_count + beta * steiner_points_count;
-// }
+    return alpha * obtuse_count + beta * steiner_points_count;
+}
 
 void write_json_no_escaping(const boost::property_tree::ptree& pt, const std::string& filename) {
     std::ostringstream oss;
@@ -72,7 +75,7 @@ boost::property_tree::ptree map_to_ptree(const std::map<std::string, double>& ma
     return pt;
 }
 
-void output(const std::vector<std::pair<size_t, size_t>>& edges, std::vector<Point> steiner_points_given, const std::string& input_file, const std::string& output_file, int obtuse_count) {
+void output(DT dt, const std::vector<std::pair<size_t, size_t>>& edges, std::vector<Point> steiner_points_given, const std::string& input_file, const std::string& output_file, int obtuse_count) {
     // Creation of property tree
     boost::property_tree::ptree pt;
 
@@ -147,7 +150,11 @@ void output(const std::vector<std::pair<size_t, size_t>>& edges, std::vector<Poi
 
     output_pt.put("steiner_points_count", steiner_points.size());
 
-    // output_pt.put("steiner_points_count", steiner_points.size());
+    double alpha = parameters["alpha"];
+    double beta = parameters["beta"];
+    if(alpha && beta){
+        output_pt.put("energy", calculateEnergy_Output(dt, alpha, beta, steiner_points.size()));
+    }
 
     output_pt.put("method", method);
 
