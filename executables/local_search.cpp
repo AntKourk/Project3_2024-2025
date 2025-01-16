@@ -96,19 +96,6 @@ std::pair<std::vector<Point>, std::vector<Point>> add_best_steiner(DT& dt, std::
                 points.push_back(best_point);
                 steiner_points.push_back(best_point);
 
-                // Check if the best option for circumcenter is to add point outside the perimeter
-                // if(is_point_inside_perimeter_local(best_point, dt)){
-                //     int min_count2 = std::min({count_projection, count_centroid, count_center, count_inside_convex_polygon_centroid});
-                //     if (min_count == count_projection) {
-                //         best_point = projection_point;
-                //     } else if (min_count == count_center) {
-                //         best_point = center;
-                //     } else if (min_count == count_inside_convex_polygon_centroid) {
-                //         best_point = inside_convex_polygon_centroid;
-                //     } else {
-                //         best_point = centroid_point;
-                //     }
-                // }
             }
         }
 
@@ -159,7 +146,7 @@ int local_search(std::vector<Point> points, DT dt, int max_iterations, const std
             obtuse_previous_count = obtuse_count;
             obtuse_count = 0;
         }
-        std::cout<<obtuse_count << "\n";
+        // std::cout<<obtuse_count << "\n";
     }
 
     obtuse_count = 0;

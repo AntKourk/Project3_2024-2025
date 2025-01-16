@@ -145,6 +145,8 @@ void output(const std::vector<std::pair<size_t, size_t>>& edges, std::vector<Poi
 
     output_pt.put("obtuse_count", obtuse_count);
 
+    output_pt.put("steiner_points_count", steiner_points.size());
+
     // output_pt.put("steiner_points_count", steiner_points.size());
 
     output_pt.put("method", method);
