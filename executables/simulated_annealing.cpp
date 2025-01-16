@@ -82,11 +82,6 @@ int simulated_annealing(std::vector<Point> points, DT dt, double alpha, double b
 
     std::vector<std::pair<size_t, size_t>> edges;
 
-    // Insert points into the triangulation
-    // for (const Point& p : points) {
-    //     dt.insert(p);
-    // }
-
     CGAL::draw(dt);
 
     previous_energy = calculateEnergy(dt, alpha, beta, steiner_points.size());
@@ -129,9 +124,6 @@ int simulated_annealing(std::vector<Point> points, DT dt, double alpha, double b
                 deltaE = new_energy - previous_energy;
 
                 if(accept_new_configuration(deltaE, T) && is_point_inside_perimeter_annealing(new_point, dt)) {
-                    // if (!is_point_inside_perimeter(new_point, p1, p2, p_obtuse)) {
-                    //     std::cout<< "MPHKA"<< "\n";
-                    // }
                     previous_energy = new_energy;
                     points.push_back(new_point);
                     steiner_points.push_back(new_point);
@@ -150,7 +142,7 @@ int simulated_annealing(std::vector<Point> points, DT dt, double alpha, double b
     }
 
     edges = print_edges(dt, points);
-    output(edges, steiner_points, input_file, output_file, obtuse_count);
+    output(dt, edges, steiner_points, input_file, output_file, obtuse_count);
     CGAL::draw(dt);
 
     return 0;

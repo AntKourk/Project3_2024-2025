@@ -116,19 +116,7 @@ int local_search(std::vector<Point> points, DT dt, int max_iterations, const std
 
     std::vector<std::pair<size_t, size_t>> edges;
 
-    // Insert points into the triangulation
-    // for (const Point& p : points) {
-    //     dt.insert(p);
-    // }
-
     CGAL::draw(dt);
-
-    // for (auto face = dt.finite_faces_begin(); face != dt.finite_faces_end(); ++face) {
-    //         auto obtuse_vertex = obtuse_vertex_index(face);
-    //         if (obtuse_vertex != -1) {
-    //             obtuse_previous_count++;
-    //         }
-    //     }
 
     int counter = 0;
     while (obtuse_exists && iterations <= max_iterations && counter < 3) {
@@ -146,7 +134,6 @@ int local_search(std::vector<Point> points, DT dt, int max_iterations, const std
             obtuse_previous_count = obtuse_count;
             obtuse_count = 0;
         }
-        // std::cout<<obtuse_count << "\n";
     }
 
     obtuse_count = 0;
@@ -157,7 +144,7 @@ int local_search(std::vector<Point> points, DT dt, int max_iterations, const std
         }
     }
     edges = print_edges(dt, all_points.first);
-    output(edges, steiner_points, input_file, output_file, obtuse_count);
+    output(dt, edges, steiner_points, input_file, output_file, obtuse_count);
     CGAL::draw(dt);
 
     return 0;
